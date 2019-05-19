@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "92881212943",
+    "firebase_url": "https://redcarpet-6a2fb.firebaseio.com",
+    "project_id": "redcarpet-6a2fb",
+    "storage_bucket": "redcarpet-6a2fb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:92881212943:android:d289583172f69590",
+        "android_client_info": {
+          "package_name": "com.example.vasu.redcarpet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "92881212943-arf5t8hglm0emcq7ujsub2ldrs8roco6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBE4bYfxM1npOW9zfV5aUpMyRZjK9zZmq0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "92881212943-arf5t8hglm0emcq7ujsub2ldrs8roco6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

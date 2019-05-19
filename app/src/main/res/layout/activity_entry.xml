@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".EntryActivity">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imageV"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="50sp"
+            android:layout_width="300sp"
+            android:layout_height="300sp"/>
+
+    <EditText
+            android:id="@+id/PhoneNo"
+            android:inputType="number"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Contact"
+            android:textColorHint="@color/Black"
+            android:layout_below="@+id/imageV"
+            android:layout_marginTop="50sp"
+            android:gravity="center"
+            android:textColor="@color/Black"/>
+
+    <Button
+            android:id="@+id/SubmitButton"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Submit"
+            android:onClick="sendOTP"
+            android:layout_below="@+id/PhoneNo"
+            android:layout_marginTop="20sp"/>
+
+</RelativeLayout>
