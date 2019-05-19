@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this,EntryActivity.class);
                 startActivity(intent);
             }
-        }, 1000);
+        }, 3000);
 
     }
 

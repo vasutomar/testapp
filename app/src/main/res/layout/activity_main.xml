@@ -17,7 +17,8 @@
             app:rb_radius="32dp"
             app:rb_rippleAmount="4"
             app:rb_duration="3000"
-            app:rb_scale="6">
+            app:rb_scale="6"
+    >
         <ImageView
                 android:layout_width="64dp"
                 android:layout_height="64dp"
@@ -25,5 +26,11 @@
                 android:id="@+id/centerImage"
                 android:src="@drawable/eye"/>
     </com.skyfishjy.library.RippleBackground>
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_below="@id/content"
+    android:layout_marginTop="40sp"
+    android:text="Visitor management app"/>
 
 </RelativeLayout>

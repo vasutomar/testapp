@@ -287,7 +287,7 @@ public class EntryActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            Toast.makeText(EntryActivity.this,"User Verified",
+                            Toast.makeText(EntryActivity.this,"New Visitor Saved!",
                                     Toast.LENGTH_LONG).show();
                             addUserToDatabase(phonenumber.getText().toString(),true);
                             FirebaseUser user = task.getResult().getUser();
@@ -295,6 +295,8 @@ public class EntryActivity extends AppCompatActivity {
                         } else {
                             // Sign in failed, display a message and update the UI
                             Log.w("done", "signInWithCredential:failure", task.getException());
+                            Toast.makeText(EntryActivity.this,"Verification failed.",
+                                    Toast.LENGTH_LONG).show();
                             if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
                                 addUserToDatabase(phonenumber.getText().toString(),false);
                                 // The verification code entered was invalid
@@ -321,7 +323,7 @@ public class EntryActivity extends AppCompatActivity {
             progressDialog.setTitle("Uploading Details to server. Please wait.");
             progressDialog.show();
 
-            StorageReference ref;
+            final StorageReference ref;
             String refString;
             if(authentic) {
                 refString = "images/authentic"+ number.toString()+".png";
@@ -333,6 +335,12 @@ public class EntryActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     progressDialog.dismiss();
+                    ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            downloadURL = uri.toString();
+                        }
+                    });
                     //Toast.makeText(EntryActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
                 }
             }).addOnFailureListener(new OnFailureListener() {
@@ -348,7 +356,7 @@ public class EntryActivity extends AppCompatActivity {
                 }
             });
 
-            ref.child(refString).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            /*ref.child(refString).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                 @Override
                 public void onSuccess(Uri uri) {
                     //createUniqueID
@@ -357,7 +365,7 @@ public class EntryActivity extends AppCompatActivity {
                     else
                         downloadURL = "Empty";
                 }
-            });
+            });*/
         } else {
             Toast.makeText(EntryActivity.this,"Null image",
                     Toast.LENGTH_LONG).show();
