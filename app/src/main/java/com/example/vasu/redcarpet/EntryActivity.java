@@ -8,6 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -15,10 +17,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.Toast;
+import android.widget.*;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -47,11 +46,13 @@ import io.reactivex.Observable;
 
 public class EntryActivity extends AppCompatActivity {
 
-
     private static final int TAKE_PICTURE = 1;
-    private de.hdodenhof.circleimageview.CircleImageView img;
+    private ImageView img;
     private EditText phonenumber;
     private String downloadURL;
+
+    private String verificationID;
+    private String codeSent;
 
     private PhoneAuthProvider.ForceResendingToken rensendingToken;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks stateCallBack;
@@ -104,23 +105,21 @@ public class EntryActivity extends AppCompatActivity {
     @SuppressLint("CheckResult")
     public Uri getImageUri(Context inContext, Bitmap inImage) throws IOException {
 
-        File filesDir = getApplicationContext().getFilesDir();
-        File file = new File(filesDir, "vasu.jpg");
-        file.createNewFile();
+        File tempDir= Environment.getExternalStorageDirectory();
+        tempDir=new File(tempDir.getAbsolutePath()+"/.temp/");
+        tempDir.mkdir();
+        File tempFile = File.createTempFile("vasu", ".jpg", tempDir);
 
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, os);
-        os.close();
-
+        final Bitmap[] compressedImageBitmap = new Bitmap[1];
         new Compressor(this)
-                .compressToFileAsFlowable(file)
+                .compressToFileAsFlowable(tempFile)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<File>() {
                     @Override
                     public void accept(File file) throws IOException {
-                        Bitmap compressedImageBitmap = new Compressor(getApplicationContext()).compressToBitmap(file);
-                        img.setImageBitmap(compressedImageBitmap);
+                        compressedImageBitmap[0] = new Compressor(getApplicationContext()).compressToBitmap(file);
+                        img.setImageBitmap(compressedImageBitmap[0]);
                     }
                 }, new Consumer<Throwable>() {
                     @Override
@@ -129,7 +128,11 @@ public class EntryActivity extends AppCompatActivity {
                     }
                 });
 
-        return Uri.parse(file.getAbsolutePath());
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        img.setImageBitmap(inImage);
+        return Uri.parse(path);
     }
 
     public void sendOTP(View v) throws InterruptedException {
@@ -198,7 +201,7 @@ public class EntryActivity extends AppCompatActivity {
                     new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                         @Override
                         public void onVerificationCompleted(PhoneAuthCredential phoneAuthCredential) {
-                            signInWithPhoneAuthCredential(phoneAuthCredential);
+                            //signInWithPhoneAuthCredential(phoneAuthCredential);
                         }
 
                         @Override
@@ -217,9 +220,64 @@ public class EntryActivity extends AppCompatActivity {
                         public void onCodeSent(String s, PhoneAuthProvider.ForceResendingToken forceResendingToken) {
                             super.onCodeSent(s, forceResendingToken);
                             rensendingToken = forceResendingToken;
+                            codeSent = s;
+                            askUserForOTP();
                         }
                     }
             );
+    }
+
+    int timeoutSig = 0;
+
+    private void askUserForOTP() {
+
+        timeoutSig = 1;
+        final AlertDialog dialogBuilder = new AlertDialog.Builder(EntryActivity.this).create();
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.custom_diag,null);
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                dialogBuilder.dismiss();
+                if(timeoutSig==1) {
+                    Toast.makeText(EntryActivity.this, "Timeout"
+                            , Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+        }, 30000);
+
+        final EditText editText = (EditText) dialogView.findViewById(R.id.edt_comment);
+        Button button1 = (Button) dialogView.findViewById(R.id.buttonSubmit);
+        Button button2 = (Button) dialogView.findViewById(R.id.buttonCancel);
+
+        button2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogBuilder.dismiss();
+            }
+        });
+        button1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                timeoutSig = 0;
+                String entry = editText.getText().toString();
+                if(entry!=null) {
+                    checkOTP(entry);
+                }
+                dialogBuilder.dismiss();
+            }
+        });
+
+        dialogBuilder.setView(dialogView);
+        dialogBuilder.show();
+    }
+
+    private void checkOTP(String entry) {
+        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(codeSent,entry);
+        signInWithPhoneAuthCredential(credential);
     }
 
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
@@ -258,7 +316,6 @@ public class EntryActivity extends AppCompatActivity {
         mFirebaseStorage = FirebaseStorage.getInstance();
         mStorageReference = mFirebaseStorage.getReference();
 
-        //Uploading picture to firebase.
         if(imagePath!=null) {
             final ProgressDialog progressDialog = new ProgressDialog(EntryActivity.this);
             progressDialog.setTitle("Uploading Details to server. Please wait.");
@@ -276,13 +333,13 @@ public class EntryActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     progressDialog.dismiss();
-                    Toast.makeText(EntryActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(EntryActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     progressDialog.dismiss();
-                    Toast.makeText(EntryActivity.this, "Upload Failed", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(EntryActivity.this, "Upload Failed", Toast.LENGTH_SHORT).show();
                 }
             }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                 @Override
@@ -308,24 +365,5 @@ public class EntryActivity extends AppCompatActivity {
         String uniqueID = mFirebaseDatabase.push().getKey();
         User user = new User(1,number,downloadURL,uniqueID);
         mFirebaseDatabase.child(uniqueID).setValue(user);
-    }
-}
-
-class User {
-
-    public int count;
-    public String number;
-    public String pictureURL;
-    public String uniqueID;
-
-    public User() {
-
-    }
-
-    public User(int count, String number, String pictureURL,String uniqueID) {
-        this.count = count;
-        this.number = number;
-        this.pictureURL = pictureURL;
-        this.uniqueID = uniqueID;
     }
 }
