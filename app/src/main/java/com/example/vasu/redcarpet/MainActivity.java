@@ -14,6 +14,9 @@ import com.skyfishjy.library.RippleBackground;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static String[] permissions = {Manifest.permission.CAMERA,
+            Manifest.permission.INTERNET,Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -32,27 +35,6 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         FirebaseApp.initializeApp(this /* Context */, options, "secondary");
 
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.CAMERA},1);
-
-        }
-
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.INTERNET)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.INTERNET},1);
-
-        }
-
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
-
-        }
-
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -63,5 +45,7 @@ public class MainActivity extends AppCompatActivity {
         }, 3000);
 
     }
+
+
 
 }

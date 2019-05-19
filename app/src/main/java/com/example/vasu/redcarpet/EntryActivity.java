@@ -1,17 +1,21 @@
 package com.example.vasu.redcarpet;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -77,6 +81,20 @@ public class EntryActivity extends AppCompatActivity {
 
         FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
+
+        if (ContextCompat.checkSelfPermission(EntryActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    101);
+        } else if (ContextCompat.checkSelfPermission(EntryActivity.this,Manifest.permission.CAMERA)
+                !=PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
+                    101);
+        } else if(ContextCompat.checkSelfPermission(EntryActivity.this,Manifest.permission.INTERNET)
+                !=PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET},
+                    101);
+        }
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, TAKE_PICTURE);
@@ -145,7 +163,6 @@ public class EntryActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
         }
     }
-
 
     void updateExistingNumber(final String userNumber) {
 
